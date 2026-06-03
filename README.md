@@ -7,8 +7,6 @@ AI Powered Enterprise Customer Support Platform using NLP, Machine Learning, Voi
 
 # 📊 Project Presentation
 
-Click below to view/download the project presentation:
-
 👉 [Click Here to View Presentation](https://docs.google.com/presentation/d/1y1IV7m5qUPM5tPgVBO7Pmn2SmRMptolp/edit?usp=drive_link&ouid=107084250459854339928&rtpof=true&sd=true)
 
 ---
@@ -134,22 +132,6 @@ MongoDB Cloud is used for:
 
 ---
 
-# 📷 Screenshots
-
-Add screenshots inside:
-
-frontend/public/screenshots/
-
-Example:
-
-* dashboard.png
-* chatbot.png
-* analytics.png
-
-Then display them here.
-
----
-
 # 🚀 Installation
 
 ## Frontend Setup
@@ -211,20 +193,6 @@ SupportX-AI/
 
 ---
 
-# 📈 Future Enhancements
-
-* OpenRouter AI Integration
-* AI Agents
-* Multi-language Support
-* Advanced ML Models
-* AI Ticketing System
-* Real-time Notifications
-* AI Summarization
-* AI Workflow Automation
-* Cloud Deployment
-
----
-
 # 👩‍💻 Author
 
 Radhika Garg
@@ -233,7 +201,7 @@ GitHub:
 https://github.com/Radhikagarg20
 
 LinkedIn:
-https://linkedin.com/in/radhikagarg-/
+https://linkedin.com/in/radhikagarg-
 
 ---
 
