@@ -154,25 +154,6 @@ python app.py
 
 ---
 
-# 🌐 Environment Variables
-
-## Frontend `.env`
-
-```env
-VITE_API_URL=http://127.0.0.1:5000
-VITE_GEMINI_API_KEY=your_key
-```
-
-## Backend `.env`
-
-```env
-MONGO_URI=your_mongodb_uri
-JWT_SECRET=your_secret
-GEMINI_API_KEY=your_key
-```
-
----
-
 # 📁 Project Structure
 
 ```bash
