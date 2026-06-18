@@ -1,5 +1,4 @@
 from memory import save_memory, get_memory
-
 from auth import (
     hash_password,
     check_password,
@@ -7,26 +6,35 @@ from auth import (
 )
 
 from flask import Flask, request, jsonify
-
 from flask_cors import CORS
-
 from pymongo import MongoClient
-
+from dotenv import load_dotenv
 from gemini_engine import ask_gemini
 
+import os
 import re
+
+# =========================
+# LOAD ENV VARIABLES
+# =========================
+
+load_dotenv()
+
+# =========================
+# FLASK APP
+# =========================
 
 app = Flask(__name__)
 
 CORS(app)
 
 # =========================
-# MONGODB CLOUD CONNECTION
+# MONGODB CONNECTION
 # =========================
 
-client = MongoClient(
-    "mongodb+srv://supportx:Support123@chat-cluster.oaejile.mongodb.net/supportx_ai?retryWrites=true&w=majority&appName=chat-cluster"
-)
+MONGO_URI = os.getenv("MONGO_URI")
+
+client = MongoClient(MONGO_URI)
 
 db = client["supportx_ai"]
 
@@ -41,7 +49,9 @@ users_collection = db["users"]
 @app.route("/")
 def home():
 
-    return "SupportX AI Backend Running 🚀"
+    return jsonify({
+        "message": "SupportX AI Backend Running"
+    })
 
 
 # =========================
@@ -51,51 +61,49 @@ def home():
 @app.route("/signup", methods=["POST"])
 def signup():
 
-    data = request.json
+    try:
 
-    name = data.get("name")
+        data = request.json
 
-    email = data.get("email")
+        name = data.get("name")
+        email = data.get("email")
+        password = data.get("password")
 
-    password = data.get("password")
+        if not name or not email or not password:
 
-    # CHECK USER EXISTS
+            return jsonify({
+                "message": "All fields are required"
+            }), 400
 
-    existing_user = users_collection.find_one({
+        existing_user = users_collection.find_one({
+            "email": email
+        })
 
-        "email": email
+        if existing_user:
 
-    })
+            return jsonify({
+                "message": "User already exists"
+            }), 400
 
-    if existing_user:
+        hashed_password = hash_password(password)
+
+        users_collection.insert_one({
+
+            "name": name,
+            "email": email,
+            "password": hashed_password
+
+        })
 
         return jsonify({
+            "message": "Signup successful"
+        })
 
-            "message": "User already exists"
+    except Exception as e:
 
-        }), 400
-
-    # HASH PASSWORD
-
-    hashed_password = hash_password(password)
-
-    # SAVE USER
-
-    users_collection.insert_one({
-
-        "name": name,
-
-        "email": email,
-
-        "password": hashed_password
-
-    })
-
-    return jsonify({
-
-        "message": "Signup successful"
-
-    })
+        return jsonify({
+            "message": str(e)
+        }), 500
 
 
 # =========================
@@ -105,54 +113,47 @@ def signup():
 @app.route("/login", methods=["POST"])
 def login():
 
-    data = request.json
+    try:
 
-    email = data.get("email")
+        data = request.json
 
-    password = data.get("password")
+        email = data.get("email")
+        password = data.get("password")
 
-    user = users_collection.find_one({
+        user = users_collection.find_one({
+            "email": email
+        })
 
-        "email": email
+        if not user:
 
-    })
+            return jsonify({
+                "message": "User not found"
+            }), 404
 
-    if not user:
+        if not check_password(
+            user["password"],
+            password
+        ):
+
+            return jsonify({
+                "message": "Invalid password"
+            }), 401
+
+        token = generate_token(email)
 
         return jsonify({
 
-            "message": "User not found"
+            "message": "Login successful",
+            "token": token,
+            "name": user["name"]
 
-        }), 404
+        })
 
-    # CHECK PASSWORD
-
-    if not check_password(
-
-        user["password"],
-        password
-
-    ):
+    except Exception as e:
 
         return jsonify({
-
-            "message": "Invalid password"
-
-        }), 401
-
-    # GENERATE TOKEN
-
-    token = generate_token(email)
-
-    return jsonify({
-
-        "message": "Login successful",
-
-        "token": token,
-
-        "name": user["name"]
-
-    })
+            "message": str(e)
+        }), 500
 
 
 # =========================
@@ -162,80 +163,96 @@ def login():
 @app.route("/chat", methods=["POST"])
 def chat():
 
-    data = request.json
+    try:
 
-    user_message = data.get("message")
+        data = request.json
 
-    lower_message = user_message.lower()
+        user_message = data.get("message")
 
-    # =========================
-    # MEMORY SAVE
-    # =========================
+        if not user_message:
 
-    if "my name is" in lower_message:
+            return jsonify({
+                "response": "Please enter a message."
+            })
 
-        try:
+        lower_message = user_message.lower()
 
-            name = re.split(
-                r"my name is",
-                user_message,
-                flags=re.IGNORECASE
-            )[1].strip()
+        # SAVE MEMORY
 
-            save_memory("username", name)
+        if "my name is" in lower_message:
 
-        except:
+            try:
 
-            pass
+                name = re.split(
+                    r"my name is",
+                    user_message,
+                    flags=re.IGNORECASE
+                )[1].strip()
 
-    # =========================
-    # MEMORY FETCH
-    # =========================
+                save_memory(
+                    "username",
+                    name
+                )
 
-    if "what is my name" in lower_message:
+            except:
 
-        saved_name = get_memory("username")
+                pass
 
-        if saved_name:
+        # RECALL MEMORY
 
-            bot_response = f"Your name is {saved_name} 😊"
+        if "what is my name" in lower_message:
+
+            saved_name = get_memory(
+                "username"
+            )
+
+            if saved_name:
+
+                bot_response = (
+                    f"Your name is {saved_name}"
+                )
+
+            else:
+
+                bot_response = (
+                    "I don't know your name yet."
+                )
 
         else:
 
-            bot_response = "I do not know your name yet."
+            memory_name = get_memory(
+                "username"
+            )
 
-    else:
+            final_prompt = f"""
+            User Name: {memory_name}
 
-        # AI RESPONSE
+            User Message:
+            {user_message}
+            """
 
-        memory_name = get_memory("username")
+            bot_response = ask_gemini(
+                final_prompt
+            )
 
-        final_prompt = f"""
-        User Name: {memory_name}
+        # SAVE CHAT
 
-        User Message:
-        {user_message}
-        """
+        chat_collection.insert_one({
 
-        bot_response = ask_gemini(final_prompt)
+            "user_message": user_message,
+            "bot_response": bot_response
 
-    # =========================
-    # SAVE CHAT
-    # =========================
+        })
 
-    chat_collection.insert_one({
+        return jsonify({
+            "response": bot_response
+        })
 
-        "user_message": user_message,
+    except Exception as e:
 
-        "bot_response": bot_response
-
-    })
-
-    return jsonify({
-
-        "response": bot_response
-
-    })
+        return jsonify({
+            "response": f"Error: {str(e)}"
+        }), 500
 
 
 # =========================
@@ -245,18 +262,26 @@ def chat():
 @app.route("/recent-chats", methods=["GET"])
 def recent_chats():
 
-    chats = list(
+    try:
 
-        chat_collection.find(
-            {},
-            {
-                "_id": 0
-            }
-        ).sort("_id", -1).limit(10)
+        chats = list(
 
-    )
+            chat_collection.find(
+                {},
+                {"_id": 0}
+            )
+            .sort("_id", -1)
+            .limit(10)
 
-    return jsonify(chats)
+        )
+
+        return jsonify(chats)
+
+    except Exception as e:
+
+        return jsonify({
+            "message": str(e)
+        }), 500
 
 
 # =========================
@@ -266,23 +291,50 @@ def recent_chats():
 @app.route("/analytics", methods=["GET"])
 def analytics():
 
-    total_chats = chat_collection.count_documents({})
+    try:
 
-    total_users = users_collection.count_documents({})
+        total_chats = (
+            chat_collection.count_documents({})
+        )
 
-    analytics_data = {
+        total_users = (
+            users_collection.count_documents({})
+        )
 
-        "total_chats": total_chats,
+        analytics_data = {
 
-        "ai_accuracy": "99%",
+            "total_chats": total_chats,
 
-        "active_users": total_users,
+            "ai_accuracy": "99%",
 
-        "live_status": "ONLINE"
+            "active_users": total_users,
 
-    }
+            "live_status": "ONLINE"
 
-    return jsonify(analytics_data)
+        }
+
+        return jsonify(
+            analytics_data
+        )
+
+    except Exception as e:
+
+        return jsonify({
+            "message": str(e)
+        }), 500
+
+
+# =========================
+# HEALTH CHECK
+# =========================
+
+@app.route("/health", methods=["GET"])
+def health():
+
+    return jsonify({
+        "status": "healthy",
+        "database": "connected"
+    })
 
 
 # =========================
@@ -291,4 +343,8 @@ def analytics():
 
 if __name__ == "__main__":
 
-    app.run(debug=True)
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        debug=True
+    )
