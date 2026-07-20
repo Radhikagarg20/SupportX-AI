@@ -30,6 +30,10 @@ The platform includes:
 * Sentiment Analysis
 
 ---
+## 🚀 Production Deployment
+
+SupportX AI is live in production and deployed using a cloud-based architecture.
+
 
 # 🧠 AI / NLP / ML Features
 
@@ -186,6 +190,36 @@ https://linkedin.com/in/radhikagarg-
 
 ---
 
-# ⭐ Final Note
+# 🏗️ Production Architecture
+
+SupportX AI is deployed as a full-stack cloud-based application.
+
+```text
+                         🌐 USER
+                           │
+                           ▼
+              ┌────────────────────────┐
+              │        VERCEL          │
+              │   React + Vite         │
+              │      Frontend          │
+              └────────────┬───────────┘
+                           │
+                           │ REST API
+                           ▼
+              ┌────────────────────────┐
+              │        RENDER          │
+              │   Flask Backend API    │
+              │     Python Server      │
+              └────────────┬───────────┘
+                           │
+                 ┌─────────┴─────────┐
+                 │                   │
+                 ▼                   ▼
+        ┌─────────────────┐  ┌─────────────────┐
+        │   OPENROUTER   │  │  MONGODB ATLAS  │
+        │   AI Engine     │  │  Cloud Database  │
+        └─────────────────┘  └─────────────────┘
+
+
 
 SupportX AI is a next-generation enterprise AI support platform combining NLP, ML, Voice AI, analytics, and modern cloud technologies into a single intelligent dashboard.
