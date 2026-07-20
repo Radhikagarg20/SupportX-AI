@@ -33,6 +33,8 @@ The platform includes:
 ## 🚀 Production Deployment
 
 SupportX AI is live in production and deployed using a cloud-based architecture.
+---
+
 
 
 # 🧠 AI / NLP / ML Features
@@ -216,10 +218,127 @@ SupportX AI is deployed as a full-stack cloud-based application.
                  │                   │
                  ▼                   ▼
         ┌─────────────────┐  ┌─────────────────┐
-        │   OPENROUTER   │  │  MONGODB ATLAS  │
-        │   AI Engine     │  │  Cloud Database  │
+        │   OPENROUTER    │  │  MONGODB ATLAS  │
+        │   AI Engine     │  │  Cloud Database │
         └─────────────────┘  └─────────────────┘
 
+---
 
 
-SupportX AI is a next-generation enterprise AI support platform combining NLP, ML, Voice AI, analytics, and modern cloud technologies into a single intelligent dashboard.
+# 🏗️ System Design
+
+SupportX AI follows a layered full-stack architecture.
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│                         CLIENT LAYER                        │
+│                                                             │
+│        React.js + Vite + Axios + Dashboard UI               │
+└──────────────────────────────┬──────────────────────────────┘
+                               │
+                               │ HTTPS / REST API
+                               ▼
+┌─────────────────────────────────────────────────────────────┐
+│                         API LAYER                           │
+│                                                             │
+│             Flask REST API + CORS + Routing                 │
+│                                                             │
+│  /signup   /login   /chat   /analytics   /recent-chats     │
+└───────────────┬──────────────────┬──────────────────────────┘
+                │                  │
+                ▼                  ▼
+┌──────────────────────┐   ┌─────────────────────────────────┐
+│ AUTHENTICATION LAYER │   │       AI ORCHESTRATION LAYER     │
+│                      │   │                                 │
+│ JWT                  │   │ Prompt Construction             │
+│ Password Hashing     │   │ Context Injection               │
+│ Token Generation     │   │ LLM API Communication            │
+└──────────────┬───────┘   └──────────────┬──────────────────┘
+               │                          │
+               ▼                          ▼
+┌──────────────────────┐       ┌─────────────────────────────┐
+│   MONGODB ATLAS      │       │        OPENROUTER            │
+│                      │       │        LLM PROVIDER          │
+│ Users                │       │                             │
+│ Chat History         │       │   AI Response Generation    │
+│ Analytics Data       │       └─────────────────────────────┘
+
+
+---
+
+
+Logical Relationship
+┌─────────────────────┐
+│       USERS         │
+│                     │
+│ _id                 │
+│ name                │
+│ email               │
+│ password_hash       │
+└──────────┬──────────┘
+           │
+           │ 1
+           │
+           │ N
+┌──────────▼──────────┐
+│    CHAT_HISTORY     │
+│                     │
+│ _id                 │
+│ user_message        │
+│ bot_response        │
+└─────────────────────┘
+
+
+---
+
+
+---
+
+# 6. API Contract
+
+This is extremely good for a software engineering resume.
+
+```markdown
+# 🔌 API Design
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/signup` | Create a new user account |
+| POST | `/login` | Authenticate user and return JWT |
+| POST | `/chat` | Process an AI conversation |
+| GET | `/recent-chats` | Retrieve recent conversations |
+| GET | `/analytics` | Retrieve platform analytics |
+| GET | `/` | Backend health check |
+
+### Example: Chat Request
+
+```json
+{
+  "message": "What is artificial intelligence?"
+}
+
+---
+Deployment Workflow
+Developer
+    │
+    ▼
+GitHub Repository
+    │
+    ├──────────────► Vercel
+    │                Frontend Deployment
+    │
+    └──────────────► Render
+                     Backend Deployment
+
+---
+# 💡 Technical Highlights
+
+- Designed and deployed a full-stack cloud application.
+- Integrated LLM-based AI responses into a Flask REST API.
+- Implemented secure password hashing and JWT authentication.
+- Built persistent chat storage using MongoDB Atlas.
+- Implemented real-time system context for date and time queries.
+- Created independent frontend and backend deployment pipelines.
+- Configured environment-based application secrets.
+- Designed modular architecture for future NLP, ML, and voice capabilities.
+└──────────────────────┘
