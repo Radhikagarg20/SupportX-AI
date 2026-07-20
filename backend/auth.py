@@ -4,42 +4,84 @@ from werkzeug.security import (
 )
 
 import jwt
-import datetime
+import os
+from datetime import datetime, timedelta
 
-SECRET_KEY = "supportx_secret_key"
+
+# =========================
+# SECRET KEY
+# =========================
+
+SECRET_KEY = os.getenv(
+    "JWT_SECRET",
+    "supportx_secret_key"
+)
 
 
+# =========================
 # HASH PASSWORD
+# =========================
+
 def hash_password(password):
 
-    return generate_password_hash(password)
-
-
-# CHECK PASSWORD
-def check_password(hashed, password):
-
-    return check_password_hash(
-        hashed,
-        password
+    return generate_password_hash(
+        password,
+        method="pbkdf2:sha256"
     )
 
 
+# =========================
+# CHECK PASSWORD
+# =========================
+
+def check_password(hashed, password):
+
+    try:
+
+        if not hashed:
+
+            return False
+
+        return check_password_hash(
+            hashed,
+            password
+        )
+
+    except Exception as error:
+
+        print(
+            "PASSWORD HASH ERROR:",
+            error
+        )
+
+        return False
+
+
+# =========================
 # GENERATE JWT TOKEN
+# =========================
+
 def generate_token(email):
 
     payload = {
 
-        "email": email,
+        "email":
+            email,
 
-        "exp": datetime.datetime.utcnow()
-        + datetime.timedelta(days=1)
+        "exp":
+            datetime.utcnow()
+            + timedelta(days=1)
 
     }
 
     token = jwt.encode(
+
         payload,
+
         SECRET_KEY,
+
         algorithm="HS256"
+
     )
 
     return token
