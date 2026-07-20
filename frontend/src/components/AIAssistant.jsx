@@ -6,7 +6,7 @@ function AIAssistant() {
   const [messages, setMessages] =
     useState([
       {
-        sender: "bot",
+        sender: "bot",  
         text:
           "Hello 👋 Welcome to SupportX AI"
       }
@@ -32,12 +32,12 @@ function AIAssistant() {
     try {
 
       const response =
-        await axios.post(
-          "http://127.0.0.1:5000/chat",
-          {
-            message: input
-          }
-        );
+  await axios.post(
+    `${import.meta.env.VITE_API_URL}/chat`,
+    {
+      message: input
+    }
+  );
 
       const botMessage = {
         sender: "bot",
@@ -47,6 +47,7 @@ function AIAssistant() {
       setMessages(prev => [
         ...prev,
         botMessage
+        
       ]);
 
     } catch {
