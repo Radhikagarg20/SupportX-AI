@@ -3,6 +3,6 @@ flask-cors
 python-dotenv
 pymongo
 PyJWT
-google-generativeai
 bcrypt
 gunicorn
+requests
