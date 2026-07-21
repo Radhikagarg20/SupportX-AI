@@ -1,8 +1,6 @@
 import "./Auth.css";
 
-import {
-  useState
-} from "react";
+import { useState } from "react";
 
 import {
   Link,
@@ -23,52 +21,88 @@ import {
   provider
 } from "../firebase";
 
+
+// BACKEND URL FROM ENVIRONMENT VARIABLE
+const API_URL =
+  import.meta.env.VITE_API_URL;
+
+
 function Login() {
 
   const navigate =
     useNavigate();
 
-  const [showPassword,
-    setShowPassword] =
-    useState(false);
 
-  const [formData,
-    setFormData] =
-    useState({
+  const [
+    showPassword,
+    setShowPassword
+  ] = useState(false);
 
-      email: "",
 
-      password: ""
+  const [
+    formData,
+    setFormData
+  ] = useState({
 
-    });
+    email: "",
 
-  const [message,
-    setMessage] =
-    useState("");
+    password: ""
 
-  const handleChange = (e) => {
+  });
 
-    setFormData({
 
-      ...formData,
+  const [
+    message,
+    setMessage
+  ] = useState("");
 
-      [e.target.name]:
-        e.target.value
 
-    });
+  // HANDLE INPUT CHANGES
 
-  };
+  const handleChange =
+    (e) => {
+
+      setFormData({
+
+        ...formData,
+
+        [e.target.name]:
+          e.target.value
+
+      });
+
+    };
+
 
   // NORMAL LOGIN
 
   const handleLogin =
     async () => {
 
+      setMessage("");
+
+
+      if (
+        !formData.email ||
+        !formData.password
+      ) {
+
+        setMessage(
+          "Please enter email and password."
+        );
+
+        return;
+
+      }
+
+
       try {
 
         const response =
           await fetch(
-            "http://127.0.0.1:5000/login",
+
+            `${API_URL}/login`,
+
             {
 
               method: "POST",
@@ -80,47 +114,75 @@ function Login() {
 
               },
 
-              body: JSON.stringify(
-                formData
-              )
+              body:
+                JSON.stringify(
+                  formData
+                )
 
             }
+
           );
+
 
         const data =
           await response.json();
 
+
         if (response.ok) {
 
           localStorage.setItem(
+
             "token",
+
             data.token
+
           );
+
 
           localStorage.setItem(
+
             "username",
+
             data.name
+
           );
 
-          navigate("/dashboard");
+
+          navigate(
+            "/dashboard"
+          );
+
 
         } else {
 
           setMessage(
-            data.message
+
+            data.message ||
+            "Invalid email or password."
+
           );
 
         }
 
+
       } catch (error) {
 
+        console.error(
+          "Login Error:",
+          error
+        );
+
+
         setMessage(
-          "Login Failed"
+
+          "Unable to connect to the backend."
+
         );
 
       }
 
     };
+
 
   // GOOGLE LOGIN
 
@@ -131,126 +193,256 @@ function Login() {
 
         const result =
           await signInWithPopup(
+
             auth,
+
             provider
+
           );
+
 
         const user =
           result.user;
 
+
         localStorage.setItem(
+
           "token",
+
           user.accessToken
+
         );
+
 
         localStorage.setItem(
+
           "username",
+
           user.displayName
+
         );
 
-        navigate("/dashboard");
+
+        navigate(
+
+          "/dashboard"
+
+        );
+
 
       } catch (error) {
 
+        console.error(
+
+          "Google Login Error:",
+
+          error
+
+        );
+
+
         setMessage(
+
           "Google Login Failed"
+
         );
 
       }
 
     };
 
+
   return (
 
-    <div className="auth-page">
+    <div
+      className="auth-page"
+    >
 
-      <div className="auth-box">
+      <div
+        className="auth-box"
+      >
 
-        <h1>SupportX AI</h1>
+        <h1>
+          SupportX AI
+        </h1>
+
 
         <p>
           Enterprise Login
         </p>
 
+
         <input
+
           type="email"
+
           name="email"
+
           placeholder="Email Address"
-          value={formData.email}
-          onChange={handleChange}
+
+          value={
+            formData.email
+          }
+
+          onChange={
+            handleChange
+          }
+
         />
 
-        <div className="password-box">
+
+        <div
+          className="password-box"
+        >
 
           <input
+
             type={
+
               showPassword
+
                 ? "text"
+
                 : "password"
+
             }
+
             name="password"
+
             placeholder="Password"
-            value={formData.password}
-            onChange={handleChange}
+
+            value={
+
+              formData.password
+
+            }
+
+            onChange={
+
+              handleChange
+
+            }
+
           />
 
+
           <button
+
             type="button"
+
             className="show-btn"
+
             onClick={() =>
+
               setShowPassword(
+
                 !showPassword
+
               )
+
             }
+
           >
 
             {showPassword
-              ? <EyeOff size={18} />
-              : <Eye size={18} />
+
+              ?
+
+              <EyeOff
+                size={18}
+              />
+
+              :
+
+              <Eye
+                size={18}
+              />
+
             }
 
           </button>
 
+
         </div>
 
+
         <button
+
           className="auth-btn"
-          onClick={handleLogin}
+
+          onClick={
+
+            handleLogin
+
+          }
+
         >
+
           Login
+
         </button>
+
 
         <button
+
           className="google-btn"
-          onClick={googleLogin}
+
+          onClick={
+
+            googleLogin
+
+          }
+
         >
+
           Continue with Google
+
         </button>
 
-        <p className="auth-message">
+
+        <p
+          className="auth-message"
+        >
+
           {message}
+
         </p>
 
-        <Link
-          className="auth-link"
-          to="/forgot-password"
-        >
-          Forgot Password?
-        </Link>
 
         <Link
+
           className="auth-link"
-          to="/signup"
+
+          to="/forgot-password"
+
         >
-          Create New Account
+
+          Forgot Password?
+
         </Link>
+
+
+        <Link
+
+          className="auth-link"
+
+          to="/signup"
+
+        >
+
+          Create New Account
+
+        </Link>
+
 
       </div>
+
 
     </div>
 
   );
 
 }
+
 
 export default Login;
