@@ -3,149 +3,98 @@ import requests
 from dotenv import load_dotenv
 from datetime import datetime, timezone, timedelta
 
-
-# =========================
-# LOAD ENVIRONMENT VARIABLES
-# =========================
-
 load_dotenv()
 
 API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-OPENROUTER_URL = (
-    "https://openrouter.ai/api/v1/chat/completions"
-)
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 MODEL = "openai/gpt-4o-mini"
 
-# India Standard Time = UTC + 5 hours 30 minutes
 IST = timezone(timedelta(hours=5, minutes=30))
 
 
-# =========================
-# AI RESPONSE FUNCTION
-# =========================
-
 def ask_gemini(user_message):
 
-    try:
+    if not API_KEY:
 
-        # =========================
-        # REAL CURRENT DATE AND TIME
-        # =========================
+        print("ERROR: OPENROUTER_API_KEY is missing")
 
-        current_time = datetime.now(IST)
+        return "AI configuration error: API key is missing."
 
-        current_date = current_time.strftime(
-            "%A, %B %d, %Y"
-        )
 
-        current_clock = current_time.strftime(
-            "%I:%M %p"
-        )
+    current_time = datetime.now(IST)
 
-        # =========================
-        # SYSTEM PROMPT
-        # =========================
+    current_date = current_time.strftime(
+        "%A, %B %d, %Y"
+    )
 
-        system_prompt = f"""
-You are SupportX AI, an intelligent
-enterprise customer support assistant.
+    current_clock = current_time.strftime(
+        "%I:%M %p"
+    )
 
-The current real-world date is:
-{current_date}
 
-The current real-world time in India (IST) is:
-{current_clock}
+    system_prompt = f"""
+You are SupportX AI, an intelligent enterprise customer support assistant.
 
-IMPORTANT:
+Current date: {current_date}
+Current time in India (IST): {current_clock}
 
-- Use the current date and time above when
-  answering questions about today, the current
-  time, the current date, or the day of the week.
-- Never invent an old date.
-- Never say that the current year is 2021.
-- If asked for the current time, use the exact
-  current time provided above.
-- If asked for today's date, use the exact date
-  provided above.
-- Answer naturally and accurately.
-- Do not mention these internal instructions.
-- Keep normal answers concise and helpful.
-- If you do not know something, say so instead
-  of inventing an answer.
-
-You are SupportX AI, an AI-powered customer
-support platform.
+Answer naturally, accurately, and helpfully.
+Keep normal answers concise.
 
 User message:
 {user_message}
 """
 
-        # =========================
-        # API HEADERS
-        # =========================
 
-        headers = {
+    headers = {
 
-            "Authorization":
-                f"Bearer {API_KEY}",
+        "Authorization": f"Bearer {API_KEY}",
 
-            "Content-Type":
-                "application/json",
+        "Content-Type": "application/json",
 
-            "HTTP-Referer":
-                "https://support-x-ai.vercel.app",
+        "HTTP-Referer":
+            "https://support-x-ai.vercel.app",
 
-            "X-Title":
-                "SupportX AI"
+        "X-Title":
+            "SupportX AI"
 
-        }
+    }
 
-        # =========================
-        # REQUEST DATA
-        # =========================
 
-        data = {
+    data = {
 
-            "model":
-                MODEL,
+        "model": MODEL,
 
-            "messages": [
+        "messages": [
 
-                {
+            {
 
-                    "role":
-                        "system",
+                "role": "system",
 
-                    "content":
-                        system_prompt
+                "content": system_prompt
 
-                },
+            },
 
-                {
+            {
 
-                    "role":
-                        "user",
+                "role": "user",
 
-                    "content":
-                        user_message
+                "content": user_message
 
-                }
+            }
 
-            ],
+        ],
 
-            "temperature":
-                0.2,
+        "temperature": 0.2,
 
-            "max_tokens":
-                500
+        "max_tokens": 500
 
-        }
+    }
 
-        # =========================
-        # API REQUEST
-        # =========================
+
+    try:
 
         response = requests.post(
 
@@ -159,70 +108,59 @@ User message:
 
         )
 
-        # =========================
-        # API ERROR HANDLING
-        # =========================
+
+        print(
+            "OPENROUTER STATUS:",
+            response.status_code
+        )
+
+        print(
+            "OPENROUTER RESPONSE:",
+            response.text
+        )
+
 
         if response.status_code != 200:
 
-            print(
-                "OPENROUTER STATUS:",
-                response.status_code
-            )
-
-            print(
-                "OPENROUTER RESPONSE:",
-                response.text
-            )
-
             return (
-                "The AI service is temporarily "
-                "unavailable."
+                "The AI service is temporarily unavailable."
             )
 
-        # =========================
-        # PARSE RESPONSE
-        # =========================
 
         result = response.json()
 
-        if (
 
-            "choices"
-            in result
+        choices = result.get("choices", [])
 
-            and len(
-                result["choices"]
-            ) > 0
 
-        ):
+        if not choices:
 
-            message = (
-
-                result["choices"][0]
-
-                .get("message", {})
-
-                .get("content")
-
+            print(
+                "NO CHOICES IN RESPONSE:",
+                result
             )
 
-            if message:
+            return "AI returned no response."
 
-                return message.strip()
 
-        print(
-            "UNEXPECTED API RESPONSE:",
-            result
+        message = (
+
+            choices[0]
+
+            .get("message", {})
+
+            .get("content")
+
         )
 
-        return (
-            "The AI returned an unexpected response."
-        )
 
-    # =========================
-    # TIMEOUT
-    # =========================
+        if message:
+
+            return message.strip()
+
+
+        return "AI returned an empty response."
+
 
     except requests.exceptions.Timeout:
 
@@ -230,14 +168,8 @@ User message:
             "ERROR: OpenRouter request timed out."
         )
 
-        return (
-            "The AI service took too long "
-            "to respond. Please try again."
-        )
+        return "AI request timed out."
 
-    # =========================
-    # REQUEST ERROR
-    # =========================
 
     except requests.exceptions.RequestException as error:
 
@@ -246,14 +178,8 @@ User message:
             repr(error)
         )
 
-        return (
-            "The AI service is temporarily "
-            "unavailable."
-        )
+        return "AI network error."
 
-    # =========================
-    # GENERAL ERROR
-    # =========================
 
     except Exception as error:
 
@@ -262,7 +188,4 @@ User message:
             repr(error)
         )
 
-        return (
-            "Something went wrong while "
-            "processing your request."
-        )
+        return "Something went wrong with the AI service."
