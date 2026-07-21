@@ -310,7 +310,6 @@ This is extremely good for a software engineering resume.
 | GET | `/analytics` | Retrieve platform analytics |
 | GET | `/` | Backend health check |
 
-### Example: Chat Request
 
 ```json
 {
@@ -342,3 +341,9 @@ GitHub Repository
 - Configured environment-based application secrets.
 - Designed modular architecture for future NLP, ML, and voice capabilities.
 └──────────────────────┘
+
+
+
+
+
+
