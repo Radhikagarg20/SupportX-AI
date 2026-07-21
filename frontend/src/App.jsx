@@ -11,9 +11,8 @@ import {
 } from "react-router-dom";
 
 import {
-  LayoutDashboard,
-  Bot,
   BrainCircuit,
+  Bot,
   Activity,
   ShieldCheck,
   Database,
@@ -30,7 +29,6 @@ import {
   Upload,
   LogOut,
   BarChart3,
-  LineChart as LineChartIcon,
   Globe,
   Server,
   Lock,
@@ -55,112 +53,148 @@ import {
   Tooltip,
   PieChart,
   Pie,
-  Cell,
-  BarChart,
-  Bar
+  Cell
 } from "recharts";
 
 import { motion } from "framer-motion";
+
+
+// =========================
+// BACKEND API URL
+// =========================
+
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  "https://supportx-ai-backend.onrender.com";
+
+
+// =========================
+// APP
+// =========================
 
 function App() {
 
   const navigate = useNavigate();
 
-  const messagesEndRef = useRef(null);
+  const messagesEndRef =
+    useRef(null);
 
-  const [sidebarOpen,
-    setSidebarOpen] =
-    useState(true);
 
-  const [activeSection,
-    setActiveSection] =
-    useState("assistant");
+  // =========================
+  // STATE
+  // =========================
 
-  const [input,
-    setInput] =
-    useState("");
+  const [
+    sidebarOpen,
+    setSidebarOpen
+  ] = useState(true);
 
-  const [loading,
-    setLoading] =
-    useState(false);
+  const [
+    activeSection,
+    setActiveSection
+  ] = useState("assistant");
 
-  const [voiceActive,
-    setVoiceActive] =
-    useState(false);
+  const [
+    input,
+    setInput
+  ] = useState("");
 
-  const [messages,
-    setMessages] =
-    useState([
-      {
-        sender: "bot",
-        text:
-          "Welcome to SupportX AI Enterprise Platform. AI Assistant connected successfully."
-      }
-    ]);
+  const [
+    loading,
+    setLoading
+  ] = useState(false);
 
-  const [analytics,
-    setAnalytics] =
-    useState({
+  const [
+    voiceActive,
+    setVoiceActive
+  ] = useState(false);
 
-      total_chats: 1824,
+  const [
+    messages,
+    setMessages
+  ] = useState([
 
-      ai_accuracy: "98.7%",
+    {
+      sender: "bot",
 
-      active_users: "2,547",
+      text:
+        "Welcome to SupportX AI Enterprise Platform. AI Assistant connected successfully."
 
-      response_time: "0.8s",
+    }
 
-      live_status: "ONLINE"
+  ]);
 
-    });
 
-  const [recentChats,
-    setRecentChats] =
-    useState([
+  const [
+    analytics,
+    setAnalytics
+  ] = useState({
 
-      {
-        user_message:
-          "Need refund support",
+    total_chats: 1824,
 
-        bot_response:
-          "Refund workflow generated successfully.",
+    ai_accuracy: "98.7%",
 
-        sentiment:
-          "Positive"
-      },
+    active_users: "2,547",
 
-      {
-        user_message:
-          "Reset my account password",
+    response_time: "0.8s",
 
-        bot_response:
-          "Identity verification initiated.",
+    live_status: "ONLINE"
 
-        sentiment:
-          "Neutral"
-      },
+  });
 
-      {
-        user_message:
-          "Voice assistant not responding",
 
-        bot_response:
-          "Voice engine restarted successfully.",
+  const [
+    recentChats,
+    setRecentChats
+  ] = useState([
 
-        sentiment:
-          "Resolved"
-      }
+    {
+      user_message:
+        "Need refund support",
 
-    ]);
+      bot_response:
+        "Refund workflow generated successfully.",
 
+      sentiment:
+        "Positive"
+
+    },
+
+    {
+      user_message:
+        "Reset my account password",
+
+      bot_response:
+        "Identity verification initiated.",
+
+      sentiment:
+        "Neutral"
+
+    },
+
+    {
+      user_message:
+        "Voice assistant not responding",
+
+      bot_response:
+        "Voice engine restarted successfully.",
+
+      sentiment:
+        "Resolved"
+
+    }
+
+  ]);
+
+
+  // =========================
   // LOGIN CHECK
+  // =========================
 
   useEffect(() => {
 
     const token =
-      localStorage.getItem(
-        "token"
-      );
+      localStorage.getItem("token");
 
     if (!token) {
 
@@ -170,7 +204,23 @@ function App() {
 
   }, [navigate]);
 
-  // CHAT FETCH
+
+  // =========================
+  // AUTO SCROLL CHAT
+  // =========================
+
+  useEffect(() => {
+
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth"
+    });
+
+  }, [messages]);
+
+
+  // =========================
+  // FETCH RECENT CHATS
+  // =========================
 
   const fetchRecentChats =
     async () => {
@@ -179,23 +229,39 @@ function App() {
 
         const response =
           await fetch(
-            "http://127.0.0.1:5000/recent-chats"
+            `${API_URL}/recent-chats`
           );
+
+        if (!response.ok) {
+
+          throw new Error(
+            "Failed to fetch recent chats"
+          );
+
+        }
 
         const data =
           await response.json();
 
         setRecentChats(data);
 
-      } catch (err) {
+      }
 
-        console.log(err);
+      catch (error) {
+
+        console.error(
+          "Recent chats error:",
+          error
+        );
 
       }
 
     };
 
-  // ANALYTICS FETCH
+
+  // =========================
+  // FETCH ANALYTICS
+  // =========================
 
   const fetchAnalytics =
     async () => {
@@ -204,21 +270,39 @@ function App() {
 
         const response =
           await fetch(
-            "http://127.0.0.1:5000/analytics"
+            `${API_URL}/analytics`
           );
+
+        if (!response.ok) {
+
+          throw new Error(
+            "Failed to fetch analytics"
+          );
+
+        }
 
         const data =
           await response.json();
 
         setAnalytics(data);
 
-      } catch (err) {
+      }
 
-        console.log(err);
+      catch (error) {
+
+        console.error(
+          "Analytics error:",
+          error
+        );
 
       }
 
     };
+
+
+  // =========================
+  // INITIAL DATA LOAD
+  // =========================
 
   useEffect(() => {
 
@@ -228,16 +312,21 @@ function App() {
 
   }, []);
 
-  // VOICE
+
+  // =========================
+  // VOICE INPUT
+  // =========================
 
   const startVoice = () => {
 
-    if (
-      !window.webkitSpeechRecognition
-    ) {
+    const SpeechRecognition =
+      window.SpeechRecognition ||
+      window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
 
       alert(
-        "Voice Recognition not supported"
+        "Voice Recognition is not supported in this browser."
       );
 
       return;
@@ -245,14 +334,18 @@ function App() {
     }
 
     const recognition =
-      new window.webkitSpeechRecognition();
+      new SpeechRecognition();
 
     recognition.lang =
       "en-US";
 
+    recognition.interimResults =
+      false;
+
     recognition.start();
 
     setVoiceActive(true);
+
 
     recognition.onresult =
       (event) => {
@@ -267,7 +360,16 @@ function App() {
 
       };
 
+
     recognition.onerror =
+      () => {
+
+        setVoiceActive(false);
+
+      };
+
+
+    recognition.onend =
       () => {
 
         setVoiceActive(false);
@@ -276,67 +378,88 @@ function App() {
 
   };
 
-  // SPEAK AI
 
-  const speakText = (
-    text
-  ) => {
+  // =========================
+  // TEXT TO SPEECH
+  // =========================
 
-    const speech =
-      new SpeechSynthesisUtterance(
-        text
+  const speakText =
+    (text) => {
+
+      if (!text) return;
+
+      const speech =
+        new SpeechSynthesisUtterance(
+          text
+        );
+
+      speech.lang =
+        "en-US";
+
+      window.speechSynthesis.cancel();
+
+      window.speechSynthesis.speak(
+        speech
       );
 
-    speech.lang =
-      "en-US";
+    };
 
-    window.speechSynthesis.cancel();
 
-    window.speechSynthesis.speak(
-      speech
-    );
-
-  };
-
+  // =========================
   // SEND MESSAGE
+  // =========================
 
   const sendMessage =
     async () => {
 
-      if (!input.trim())
+      if (!input.trim()) {
+
         return;
 
+      }
+
+
       const currentInput =
-        input;
+        input.trim();
+
 
       const userMessage = {
 
         sender: "user",
 
-        text: currentInput
+        text:
+          currentInput
 
       };
 
-      setMessages((prev) => [
 
-        ...prev,
+      setMessages(
+        (prev) => [
 
-        userMessage
+          ...prev,
 
-      ]);
+          userMessage
+
+        ]
+      );
+
 
       setInput("");
 
       setLoading(true);
 
+
       try {
 
         const response =
           await fetch(
-            "http://127.0.0.1:5000/chat",
+
+            `${API_URL}/chat`,
+
             {
 
-              method: "POST",
+              method:
+                "POST",
 
               headers: {
 
@@ -351,68 +474,116 @@ function App() {
                   message:
                     currentInput
 
-                })
+              })
 
             }
+
           );
+
+
+        if (!response.ok) {
+
+          throw new Error(
+            `Backend returned ${response.status}`
+          );
+
+        }
+
 
         const data =
           await response.json();
 
+
         const botMessage = {
 
-          sender: "bot",
+          sender:
+            "bot",
 
           text:
-            data.response
+            data.response ||
+            "No response received from AI."
 
         };
 
-        setMessages((prev) => [
 
-          ...prev,
+        setMessages(
+          (prev) => [
 
-          botMessage
+            ...prev,
 
-        ]);
+            botMessage
+
+          ]
+        );
+
 
         speakText(
-          data.response
+          botMessage.text
         );
+
 
         fetchAnalytics();
 
         fetchRecentChats();
 
-      } catch (error) {
+      }
 
-        setMessages((prev) => [
 
-          ...prev,
+      catch (error) {
 
-          {
+        console.error(
+          "Chat API Error:",
+          error
+        );
 
-            sender: "bot",
 
-            text:
-              "Realtime AI server temporarily unavailable."
+        setMessages(
+          (prev) => [
 
-          }
+            ...prev,
 
-        ]);
+            {
+
+              sender:
+                "bot",
+
+              text:
+                "Realtime AI server temporarily unavailable. Please try again."
+
+            }
+
+          ]
+        );
 
       }
 
-      setLoading(false);
+
+      finally {
+
+        setLoading(false);
+
+      }
 
     };
 
+
+  // =========================
   // ENTER KEY
+  // =========================
 
   const handleKeyDown =
     (e) => {
 
-      if (e.key === "Enter") {
+      if (
+
+        e.key ===
+        "Enter" &&
+
+        !e.shiftKey
+
+      ) {
+
+        e.preventDefault();
 
         sendMessage();
 
@@ -420,7 +591,10 @@ function App() {
 
     };
 
-  // FILE
+
+  // =========================
+  // FILE UPLOAD
+  // =========================
 
   const handleFileUpload =
     (e) => {
@@ -430,59 +604,91 @@ function App() {
 
       if (!file) return;
 
-      setMessages((prev) => [
 
-        ...prev,
+      setMessages(
+        (prev) => [
 
-        {
+          ...prev,
 
-          sender: "user",
+          {
 
-          text:
-            "Uploaded File: " +
-            file.name
+            sender:
+              "user",
 
-        }
+            text:
+              `Uploaded File: ${file.name}`
 
-      ]);
+          }
+
+        ]
+      );
 
     };
 
+
+  // =========================
   // LOGOUT
+  // =========================
 
-  const logoutUser = () => {
+  const logoutUser =
+    () => {
 
-    localStorage.removeItem(
-      "token"
-    );
+      localStorage.removeItem(
+        "token"
+      );
 
-    localStorage.removeItem(
-      "username"
-    );
+      localStorage.removeItem(
+        "username"
+      );
 
-    navigate("/login");
+      navigate("/login");
 
-  };
+    };
 
+
+  // =========================
   // CHART DATA
+  // =========================
 
   const chartData = [
 
-    { day: "Mon", chats: 40 },
+    {
+      day: "Mon",
+      chats: 40
+    },
 
-    { day: "Tue", chats: 65 },
+    {
+      day: "Tue",
+      chats: 65
+    },
 
-    { day: "Wed", chats: 82 },
+    {
+      day: "Wed",
+      chats: 82
+    },
 
-    { day: "Thu", chats: 70 },
+    {
+      day: "Thu",
+      chats: 70
+    },
 
-    { day: "Fri", chats: 120 },
+    {
+      day: "Fri",
+      chats: 120
+    },
 
-    { day: "Sat", chats: 90 },
+    {
+      day: "Sat",
+      chats: 90
+    },
 
-    { day: "Sun", chats: 145 }
+    {
+      day: "Sun",
+      chats: 145
+    }
 
   ];
+
 
   const aiPieData = [
 
@@ -503,15 +709,21 @@ function App() {
 
   ];
 
+
   const COLORS = [
 
     "#d1d5db",
+
     "#94a3b8",
+
     "#64748b"
 
   ];
 
+
+  // =========================
   // SECTION RENDER
+  // =========================
 
   const renderSection =
     () => {
@@ -519,6 +731,11 @@ function App() {
       switch (
         activeSection
       ) {
+
+
+        // =========================
+        // AI ASSISTANT
+        // =========================
 
         case "assistant":
 
@@ -548,9 +765,12 @@ function App() {
 
                 </div>
 
+
                 <div className="hero-badge">
 
-                  <BrainCircuit size={18} />
+                  <BrainCircuit
+                    size={18}
+                  />
 
                   Gemini AI Active
 
@@ -558,63 +778,83 @@ function App() {
 
               </div>
 
+
               <div className="cards">
 
                 <StatCard
                   title="NLP Accuracy"
                   value="98%"
-                  icon={<Sparkles />}
+                  icon={
+                    <Sparkles />
+                  }
                 />
 
                 <StatCard
                   title="Intent Detection"
                   value="94%"
-                  icon={<Cpu />}
+                  icon={
+                    <Cpu />
+                  }
                 />
 
                 <StatCard
                   title="ML Confidence"
                   value="96%"
-                  icon={<BadgeCheck />}
+                  icon={
+                    <BadgeCheck />
+                  }
                 />
 
                 <StatCard
                   title="Realtime Replies"
                   value="0.8s"
-                  icon={<Radio />}
+                  icon={
+                    <Radio />
+                  }
                 />
 
               </div>
 
+
               <div className="feature-grid">
 
                 <FeatureCard
-                  icon={<Bot />}
+                  icon={
+                    <Bot />
+                  }
                   title="Conversational AI"
                   text="Human-like contextual AI responses powered by NLP."
                 />
 
                 <FeatureCard
-                  icon={<AudioLines />}
+                  icon={
+                    <AudioLines />
+                  }
                   title="Voice Assistant"
                   text="Realtime speech recognition and AI voice synthesis."
                 />
 
                 <FeatureCard
-                  icon={<TrendingUp />}
+                  icon={
+                    <TrendingUp />
+                  }
                   title="Predictive AI"
                   text="Machine learning based customer behavior prediction."
                 />
 
                 <FeatureCard
-                  icon={<ShieldCheck />}
+                  icon={
+                    <ShieldCheck />
+                  }
                   title="Fraud Detection"
                   text="AI anomaly detection and intelligent monitoring."
                 />
 
               </div>
 
+
               <div className="content-grid">
+
 
                 <div className="chat-box">
 
@@ -633,6 +873,7 @@ function App() {
 
                     </div>
 
+
                     <div className="live-indicator">
 
                       <span></span>
@@ -643,9 +884,11 @@ function App() {
 
                   </div>
 
+
                   <div className="messages">
 
                     {messages.map(
+
                       (
                         msg,
                         index
@@ -668,11 +911,14 @@ function App() {
 
                               <Avatar
                                 icon={
-                                  <Bot size={18} />
+                                  <Bot
+                                    size={18}
+                                  />
                                 }
                               />
 
                             )}
+
 
                             <div
                               className={`bubble ${
@@ -687,12 +933,15 @@ function App() {
 
                             </div>
 
+
                             {msg.sender ===
                               "user" && (
 
                               <Avatar
                                 icon={
-                                  <User size={18} />
+                                  <User
+                                    size={18}
+                                  />
                                 }
                               />
 
@@ -703,7 +952,9 @@ function App() {
                         </div>
 
                       )
+
                     )}
+
 
                     {loading && (
 
@@ -719,13 +970,15 @@ function App() {
 
                     )}
 
+
                     <div
                       ref={
                         messagesEndRef
                       }
-                    ></div>
+                    />
 
                   </div>
+
 
                   <div className="input-area">
 
@@ -741,16 +994,27 @@ function App() {
                     >
 
                       {voiceActive ? (
-                        <MicOff size={18} />
+
+                        <MicOff
+                          size={18}
+                        />
+
                       ) : (
-                        <Mic size={18} />
+
+                        <Mic
+                          size={18}
+                        />
+
                       )}
 
                     </button>
 
+
                     <label className="icon-btn">
 
-                      <Upload size={18} />
+                      <Upload
+                        size={18}
+                      />
 
                       <input
                         type="file"
@@ -762,20 +1026,25 @@ function App() {
 
                     </label>
 
+
                     <input
                       type="text"
                       className="input"
                       placeholder="Ask AI anything..."
-                      value={input}
-                      onChange={(e)=>
-                        setInput(
-                          e.target.value
-                        )
+                      value={
+                        input
+                      }
+                      onChange={
+                        (e) =>
+                          setInput(
+                            e.target.value
+                          )
                       }
                       onKeyDown={
                         handleKeyDown
                       }
                     />
+
 
                     <button
                       className="icon-btn"
@@ -786,9 +1055,12 @@ function App() {
                       }
                     >
 
-                      <Volume2 size={18} />
+                      <Volume2
+                        size={18}
+                      />
 
                     </button>
+
 
                     <button
                       className="send-btn"
@@ -797,13 +1069,16 @@ function App() {
                       }
                     >
 
-                      <Send size={18} />
+                      <Send
+                        size={18}
+                      />
 
                     </button>
 
                   </div>
 
                 </div>
+
 
                 <div className="recent-box">
 
@@ -814,6 +1089,7 @@ function App() {
                     </h2>
 
                   </div>
+
 
                   <div className="recent-card">
 
@@ -840,6 +1116,7 @@ function App() {
 
                   </div>
 
+
                   <div className="recent-card">
 
                     <div className="recent-top">
@@ -864,6 +1141,7 @@ function App() {
                     </p>
 
                   </div>
+
 
                   <div className="recent-card">
 
@@ -896,6 +1174,11 @@ function App() {
 
           );
 
+
+        // =========================
+        // ANALYTICS
+        // =========================
+
         case "analytics":
 
           return (
@@ -924,33 +1207,43 @@ function App() {
 
               </div>
 
+
               <div className="cards">
 
                 <StatCard
                   title="Total AI Queries"
                   value="18.4K"
-                  icon={<MessageSquare />}
+                  icon={
+                    <MessageSquare />
+                  }
                 />
 
                 <StatCard
                   title="AI Resolution"
                   value="92%"
-                  icon={<ShieldCheck />}
+                  icon={
+                    <ShieldCheck />
+                  }
                 />
 
                 <StatCard
                   title="Escalation Rate"
                   value="6%"
-                  icon={<Bell />}
+                  icon={
+                    <Bell />
+                  }
                 />
 
                 <StatCard
                   title="Realtime Traffic"
                   value="1.2K"
-                  icon={<Wifi />}
+                  icon={
+                    <Wifi />
+                  }
                 />
 
               </div>
+
 
               <div className="analytics-grid">
 
@@ -968,6 +1261,7 @@ function App() {
 
                   </div>
 
+
                   <ResponsiveContainer
                     width="100%"
                     height={300}
@@ -979,50 +1273,21 @@ function App() {
                       }
                     >
 
-                      <defs>
-
-                        <linearGradient
-                          id="colorChats"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-
-                          <stop
-                            offset="5%"
-                            stopColor="#94a3b8"
-                            stopOpacity={
-                              0.8
-                            }
-                          />
-
-                          <stop
-                            offset="95%"
-                            stopColor="#94a3b8"
-                            stopOpacity={
-                              0
-                            }
-                          />
-
-                        </linearGradient>
-
-                      </defs>
-
-                      <XAxis dataKey="day" />
+                      <XAxis
+                        dataKey="day"
+                      />
 
                       <YAxis />
 
                       <Tooltip />
 
+
                       <Area
                         type="monotone"
                         dataKey="chats"
                         stroke="#d1d5db"
-                        fillOpacity={
-                          1
-                        }
-                        fill="url(#colorChats)"
+                        fill="#94a3b8"
+                        fillOpacity={0.35}
                       />
 
                     </AreaChart>
@@ -1030,6 +1295,7 @@ function App() {
                   </ResponsiveContainer>
 
                 </div>
+
 
                 <div className="chart-box">
 
@@ -1040,6 +1306,7 @@ function App() {
                     </h2>
 
                   </div>
+
 
                   <ResponsiveContainer
                     width="100%"
@@ -1059,13 +1326,16 @@ function App() {
                       >
 
                         {aiPieData.map(
+
                           (
                             entry,
                             index
                           ) => (
 
                             <Cell
-                              key={index}
+                              key={
+                                index
+                              }
                               fill={
                                 COLORS[
                                   index
@@ -1074,9 +1344,11 @@ function App() {
                             />
 
                           )
+
                         )}
 
                       </Pie>
+
 
                       <Tooltip />
 
@@ -1091,6 +1363,11 @@ function App() {
             </>
 
           );
+
+
+        // =========================
+        // USERS
+        // =========================
 
         case "users":
 
@@ -1119,33 +1396,43 @@ function App() {
 
               </div>
 
+
               <div className="cards">
 
                 <StatCard
                   title="Online Users"
                   value="245"
-                  icon={<Users />}
+                  icon={
+                    <Users />
+                  }
                 />
 
                 <StatCard
                   title="Resolved Tickets"
                   value="91%"
-                  icon={<BadgeCheck />}
+                  icon={
+                    <BadgeCheck />
+                  }
                 />
 
                 <StatCard
                   title="AI Satisfaction"
                   value="4.8"
-                  icon={<Sparkles />}
+                  icon={
+                    <Sparkles />
+                  }
                 />
 
                 <StatCard
                   title="Support Agents"
                   value="34"
-                  icon={<User />}
+                  icon={
+                    <User />
+                  }
                 />
 
               </div>
+
 
               <div className="table-box">
 
@@ -1156,6 +1443,7 @@ function App() {
                   </h2>
 
                 </div>
+
 
                 <table>
 
@@ -1183,6 +1471,7 @@ function App() {
 
                   </thead>
 
+
                   <tbody>
 
                     <tr>
@@ -1205,6 +1494,7 @@ function App() {
 
                     </tr>
 
+
                     <tr>
 
                       <td>
@@ -1224,6 +1514,7 @@ function App() {
                       </td>
 
                     </tr>
+
 
                     <tr>
 
@@ -1255,6 +1546,11 @@ function App() {
 
           );
 
+
+        // =========================
+        // LIVE ACTIVITY
+        // =========================
+
         case "live":
 
           return (
@@ -1282,28 +1578,37 @@ function App() {
 
               </div>
 
+
               <div className="activity-feed">
 
                 <ActivityItem
-                  icon={<Wifi />}
+                  icon={
+                    <Wifi />
+                  }
                   title="User connected"
                   time="2 sec ago"
                 />
 
                 <ActivityItem
-                  icon={<Bot />}
+                  icon={
+                    <Bot />
+                  }
                   title="AI generated response"
                   time="10 sec ago"
                 />
 
                 <ActivityItem
-                  icon={<Mic />}
+                  icon={
+                    <Mic />
+                  }
                   title="Voice assistant activated"
                   time="22 sec ago"
                 />
 
                 <ActivityItem
-                  icon={<Database />}
+                  icon={
+                    <Database />
+                  }
                   title="MongoDB synced"
                   time="1 min ago"
                 />
@@ -1313,6 +1618,11 @@ function App() {
             </>
 
           );
+
+
+        // =========================
+        // DATABASE
+        // =========================
 
         case "database":
 
@@ -1341,30 +1651,39 @@ function App() {
 
               </div>
 
+
               <div className="cards">
 
                 <StatCard
                   title="Collections"
                   value="18"
-                  icon={<Layers3 />}
+                  icon={
+                    <Layers3 />
+                  }
                 />
 
                 <StatCard
                   title="Cloud Status"
                   value="LIVE"
-                  icon={<CloudCog />}
+                  icon={
+                    <CloudCog />
+                  }
                 />
 
                 <StatCard
                   title="AI Logs"
                   value="14K"
-                  icon={<Database />}
+                  icon={
+                    <Database />
+                  }
                 />
 
                 <StatCard
                   title="Server Sync"
                   value="99%"
-                  icon={<Server />}
+                  icon={
+                    <Server />
+                  }
                 />
 
               </div>
@@ -1372,6 +1691,11 @@ function App() {
             </>
 
           );
+
+
+        // =========================
+        // VOICE AI
+        // =========================
 
         case "voice":
 
@@ -1400,28 +1724,37 @@ function App() {
 
               </div>
 
+
               <div className="voice-grid">
 
                 <FeatureCard
-                  icon={<Mic />}
+                  icon={
+                    <Mic />
+                  }
                   title="Speech Recognition"
                   text="Realtime voice transcription system."
                 />
 
                 <FeatureCard
-                  icon={<Volume2 />}
+                  icon={
+                    <Volume2 />
+                  }
                   title="AI Voice Output"
                   text="Human-like speech synthesis."
                 />
 
                 <FeatureCard
-                  icon={<Globe />}
+                  icon={
+                    <Globe />
+                  }
                   title="Multi-language Voice"
                   text="Global multilingual voice AI support."
                 />
 
                 <FeatureCard
-                  icon={<Clock3 />}
+                  icon={
+                    <Clock3 />
+                  }
                   title="Realtime Streaming"
                   text="Low latency audio processing."
                 />
@@ -1431,6 +1764,11 @@ function App() {
             </>
 
           );
+
+
+        // =========================
+        // SECURITY
+        // =========================
 
         case "security":
 
@@ -1460,33 +1798,43 @@ function App() {
 
               </div>
 
+
               <div className="cards">
 
                 <StatCard
                   title="JWT Tokens"
                   value="Protected"
-                  icon={<Lock />}
+                  icon={
+                    <Lock />
+                  }
                 />
 
                 <StatCard
                   title="Threat Detection"
                   value="Realtime"
-                  icon={<ShieldCheck />}
+                  icon={
+                    <ShieldCheck />
+                  }
                 />
 
                 <StatCard
                   title="Firebase Auth"
                   value="Connected"
-                  icon={<BadgeCheck />}
+                  icon={
+                    <BadgeCheck />
+                  }
                 />
 
                 <StatCard
                   title="AI Firewall"
                   value="Enabled"
-                  icon={<ShieldCheck />}
+                  icon={
+                    <ShieldCheck />
+                  }
                 />
 
               </div>
+
 
               <div className="security-panel">
 
@@ -1504,6 +1852,7 @@ function App() {
 
                 </div>
 
+
                 <div className="security-item">
 
                   <h3>
@@ -1517,6 +1866,7 @@ function App() {
                   </p>
 
                 </div>
+
 
                 <div className="security-item">
 
@@ -1539,6 +1889,7 @@ function App() {
 
           );
 
+
         default:
 
           return null;
@@ -1547,9 +1898,15 @@ function App() {
 
     };
 
+
+  // =========================
+  // MAIN RETURN
+  // =========================
+
   return (
 
     <div className="app">
+
 
       {/* SIDEBAR */}
 
@@ -1569,8 +1926,11 @@ function App() {
 
           </div>
 
+
           <SidebarItem
-            icon={<BrainCircuit />}
+            icon={
+              <BrainCircuit />
+            }
             title="AI Assistant"
             subtitle="NLP Engine"
             active={
@@ -1584,8 +1944,11 @@ function App() {
             }
           />
 
+
           <SidebarItem
-            icon={<BarChart3 />}
+            icon={
+              <BarChart3 />
+            }
             title="AI Insights"
             subtitle="Analytics"
             active={
@@ -1599,8 +1962,11 @@ function App() {
             }
           />
 
+
           <SidebarItem
-            icon={<Users />}
+            icon={
+              <Users />
+            }
             title="Users"
             subtitle="Sessions"
             active={
@@ -1614,8 +1980,11 @@ function App() {
             }
           />
 
+
           <SidebarItem
-            icon={<Activity />}
+            icon={
+              <Activity />
+            }
             title="Live Activity"
             subtitle="Realtime"
             active={
@@ -1629,8 +1998,11 @@ function App() {
             }
           />
 
+
           <SidebarItem
-            icon={<Database />}
+            icon={
+              <Database />
+            }
             title="Database"
             subtitle="Cloud Storage"
             active={
@@ -1644,8 +2016,11 @@ function App() {
             }
           />
 
+
           <SidebarItem
-            icon={<Mic />}
+            icon={
+              <Mic />
+            }
             title="Voice AI"
             subtitle="Speech AI"
             active={
@@ -1659,8 +2034,11 @@ function App() {
             }
           />
 
+
           <SidebarItem
-            icon={<ShieldCheck />}
+            icon={
+              <ShieldCheck />
+            }
             title="Security"
             subtitle="JWT + Firebase"
             active={
@@ -1674,11 +2052,13 @@ function App() {
             }
           />
 
+
           <div className="ai-status-box">
 
             <h3>
               AI System Status
             </h3>
+
 
             <div className="status-line">
 
@@ -1688,6 +2068,7 @@ function App() {
 
             </div>
 
+
             <div className="status-line">
 
               <span className="green-dot"></span>
@@ -1696,6 +2077,7 @@ function App() {
 
             </div>
 
+
             <div className="status-line">
 
               <span className="green-dot"></span>
@@ -1703,6 +2085,7 @@ function App() {
               Gemini Connected
 
             </div>
+
 
             <div className="status-line">
 
@@ -1717,6 +2100,7 @@ function App() {
         </div>
 
       )}
+
 
       {/* MAIN */}
 
@@ -1737,6 +2121,7 @@ function App() {
 
           </button>
 
+
           <div className="top-right">
 
             <div className="system-status">
@@ -1747,6 +2132,7 @@ function App() {
 
             </div>
 
+
             <button
               className="logout-btn"
               onClick={
@@ -1754,7 +2140,9 @@ function App() {
               }
             >
 
-              <LogOut size={16} />
+              <LogOut
+                size={16}
+              />
 
               Logout
 
@@ -1763,6 +2151,7 @@ function App() {
           </div>
 
         </div>
+
 
         {renderSection()}
 
@@ -1774,7 +2163,10 @@ function App() {
 
 }
 
+
+// =========================
 // SIDEBAR ITEM
+// =========================
 
 function SidebarItem({
 
@@ -1798,7 +2190,9 @@ function SidebarItem({
           ? "sidebar-active"
           : ""
       }`}
-      onClick={onClick}
+      onClick={
+        onClick
+      }
     >
 
       <div className="sidebar-icon">
@@ -1807,11 +2201,16 @@ function SidebarItem({
 
       </div>
 
+
       <div>
 
-        <span>{title}</span>
+        <span>
+          {title}
+        </span>
 
-        <p className="sidebar-subtitle">
+        <p
+          className="sidebar-subtitle"
+        >
 
           {subtitle}
 
@@ -1825,7 +2224,10 @@ function SidebarItem({
 
 }
 
+
+// =========================
 // STAT CARD
+// =========================
 
 function StatCard({
 
@@ -1856,9 +2258,14 @@ function StatCard({
 
       </div>
 
-      <h3>{title}</h3>
 
-      <h1>{value}</h1>
+      <h3>
+        {title}
+      </h3>
+
+      <h1>
+        {value}
+      </h1>
 
     </motion.div>
 
@@ -1866,7 +2273,10 @@ function StatCard({
 
 }
 
-// FEATURE
+
+// =========================
+// FEATURE CARD
+// =========================
 
 function FeatureCard({
 
@@ -1893,9 +2303,15 @@ function FeatureCard({
 
       </div>
 
-      <h3>{title}</h3>
 
-      <p>{text}</p>
+      <h3>
+        {title}
+      </h3>
+
+
+      <p>
+        {text}
+      </p>
 
     </motion.div>
 
@@ -1903,7 +2319,10 @@ function FeatureCard({
 
 }
 
+
+// =========================
 // AVATAR
+// =========================
 
 function Avatar({
 
@@ -1923,7 +2342,10 @@ function Avatar({
 
 }
 
-// ACTIVITY
+
+// =========================
+// ACTIVITY ITEM
+// =========================
 
 function ActivityItem({
 
@@ -1945,11 +2367,16 @@ function ActivityItem({
 
       </div>
 
+
       <div>
 
-        <h3>{title}</h3>
+        <h3>
+          {title}
+        </h3>
 
-        <p>{time}</p>
+        <p>
+          {time}
+        </p>
 
       </div>
 
@@ -1958,5 +2385,6 @@ function ActivityItem({
   );
 
 }
+
 
 export default App;
